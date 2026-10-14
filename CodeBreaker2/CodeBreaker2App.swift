@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct CodeBreaker2App: App {
+    private var game = CodeBreaker(name: "CodeBreaker", numOfPegs: 4, pegChoices: [.red, .green, .blue, .yellow])
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            CodeBreakerView(game: game)
         }
     }
 }

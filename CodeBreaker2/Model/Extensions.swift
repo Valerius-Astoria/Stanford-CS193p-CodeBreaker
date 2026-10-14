@@ -5,7 +5,7 @@
 //  Created by ZAKA on 10/13/26.
 //
 
-import Foundation
+import SwiftUI
 
 extension Peg {
     static let missing = Color.clear

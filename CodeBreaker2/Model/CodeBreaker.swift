@@ -10,10 +10,11 @@ import SwiftUI
 typealias Peg = Color // Each geg is represented by a color
 
 /// The state and rules for a CodeBreaker game.
+@Observable
 class CodeBreaker {
     var name: String
     var numOfPegs: Int
-    var pegChpoices: [Peg]
+    var pegChoices: [Peg]
     
     var masterCode: Code
     var guess: Code
@@ -21,15 +22,15 @@ class CodeBreaker {
     
     var isOver: Bool = false // TODO: Change to a computed property
     
-    init(name: String, numOfPegs: Int, pegChpoices: [Peg]) {
+    init(name: String, numOfPegs: Int, pegChoices: [Peg]) {
         self.name = name
         self.numOfPegs = numOfPegs
-        self.pegChpoices = pegChpoices
+        self.pegChoices = pegChoices
         
         self.masterCode = Code(kind: .master(isHidden: false), count: numOfPegs)
         self.guess = Code(kind: .guess, count: numOfPegs) // Initialize guess with empty pegs.
         
-        self.masterCode.randomize(from: pegChpoices) // Randomly generates the correct peg color combination.
+        self.masterCode.randomize(from: pegChoices) // Randomly generates the correct peg color combination.
     }
     
     /// Changes the peg color at a specific position in the current guess.
@@ -42,9 +43,9 @@ class CodeBreaker {
         // Gets the current color of the target peg.
         let existingPeg = guess.pegs[index]
         // Calculates the next color and assigns it to the peg in the current guess.
-        if let existingIndex = pegChpoices.firstIndex(of: existingPeg) {
-            let nextIndex = (existingIndex + 1) % pegChpoices.count
-            guess.pegs[index] = pegChpoices[nextIndex]
+        if let existingIndex = pegChoices.firstIndex(of: existingPeg) {
+            let nextIndex = (existingIndex + 1) % pegChoices.count
+            guess.pegs[index] = pegChoices[nextIndex]
         } else {
             guess.pegs[index] = Peg.missing
         }
@@ -61,28 +62,26 @@ class CodeBreaker {
     /// Attempts a guess against the master code, stores the attempt to the `attempts` array, and checks whether the guess matches the master code.
     ///
     /// If the current guess is not valid, the attempt will not be added to the array.
-    ///
-    /// - Returns: Whether the guess is successfully performed.
-    func attemptGuess() -> Bool {
+    func attemptGuess() {
         // Computes the matching result for the current guess against the ,aster code.
         let matches = guess.match(against: masterCode)
         // Constructs the current attempt based on guess
         let attempt = Code(kind: .attempt(matches), pegs: guess.pegs)
         // Checks if the current attempt is sementic to any previous attempts.
-        guard valid(code: attempt) else { return false } // Early exists if the guess is invalid.
+        guard valid(code: attempt) else { return } // Early exists if the guess is invalid.
         // Inserts the current attempt at the beginning of the attempts array.
         attempts.insert(attempt, at: 0)
         // Checks if the current guess matches the master code.
         if matches.allSatisfy({ $0 == .exact }) {
             masterCode.kind = .master(isHidden: true)
         }
-        // Reinitialize guess with empty pegs.
+        // Reinitialize guess with empty pegs
         guess = Code(kind: .guess, count: numOfPegs)
     }
     
     /// Restarts the game with pegChoices kept to be the same.
     func restart() {
-        masterCode.randomize(from: pegChpoices)
+        masterCode.randomize(from: pegChoices)
         guess = Code(kind: .guess, count: numOfPegs)
         attempts.removeAll()
     }
