@@ -21,4 +21,26 @@ extension View {
             .font(.system(size: maximum))
             .minimumScaleFactor(minimum/maximum)
     }
+    
+    func mask(isOver:Bool) -> some View {
+        return self
+            .transaction(value: isOver) { transaction in
+                if isOver {
+                    transaction.animation = nil
+                }
+            }
+    }
+}
+
+extension AnyTransition {
+    static func attempt() -> AnyTransition {
+        return AnyTransition.asymmetric(
+            insertion: .move(edge: .top),
+            removal: .move(edge: .trailing))
+    }
+}
+
+extension Animation {
+    static let masterCode: Animation = .easeInOut
+    static let selection: Animation = .easeInOut
 }

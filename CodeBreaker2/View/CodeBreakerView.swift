@@ -12,7 +12,6 @@ struct CodeBreakerView: View {
     // MARK: - Data In
     var game: CodeBreaker
     
-    
     // MARK: - Data Owned by Me
     @State private var selection = 0
     
@@ -21,23 +20,31 @@ struct CodeBreakerView: View {
         VStack {
             // Renders the master code for the game.
             view(for: game.masterCode)
+                .mask(isOver: game.isOver)
             
             // Renders the current guess and previous attempts in a scrollable area.
             ScrollView {
                 view(for: game.guess)
+                    .animation(.selection, value: selection)
                 
                 ForEach(game.attempts, id: \.self) { attempt in
                     view(for: attempt)
+                        .transition(.attempt())
                 }
             }
             
             // Renders the peg chooser for selecting peg colors.
             PegChooser(game: game, selection: $selection)
+                .transition(.offset(x: 0, y: 300))
         }
         .toolbar {
-            // Adds the restart button to the tool bar.
+            // Adds a restart button to the tool bar.
             ToolbarItem(placement: .primaryAction) {
-                Button("Restart", systemImage: "arrow.circlepath", action: game.restart)
+                Button("Restart", systemImage: "arrow.circlepath") {
+                    withAnimation(.easeInOut) {
+                        game.restart()
+                    }
+                }
             }
         }
         .padding()
@@ -56,7 +63,13 @@ struct CodeBreakerView: View {
             MatchMarkers(matches: code.matches)
                 .overlay {
                     if code.kind == .guess, !game.isOver {
-                        Button("Guess", action: game.attemptGuess).flexibleSystemFont()
+                        Button("Guess") {
+                            withAnimation(.easeInOut) {
+                                game.attemptGuess()
+                                selection = 0
+                            }
+                        }
+                        .flexibleSystemFont()
                     }
                 }
         }
@@ -88,7 +101,6 @@ struct CodeBreakerView: View {
                 if (code.kind == .master(isHidden: true)) {
                     Mask.shape
                         .foregroundStyle(Mask.color)
-                    
                 }
             }
     }

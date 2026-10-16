@@ -12,7 +12,9 @@ typealias Peg = Color // Each geg is represented by a color
 
 /// The state and rules for a CodeBreaker game.
 @Observable
-class CodeBreaker {
+class CodeBreaker: Identifiable {
+    var id = UUID()
+    
     var name: String
     var numOfPegs: Int
     var pegChoices: [Peg]
@@ -95,6 +97,7 @@ class CodeBreaker {
         masterCode.kind = .master(isHidden: true)
         guess = Code(kind: .guess, count: numOfPegs)
         attempts.removeAll()
+        print(self.masterCode.pegs)
     }
     
     /// Validates the current attempt. If the attempt is sementic to any previous attempts, or the attempt is empty, the validation would fail.
@@ -103,4 +106,8 @@ class CodeBreaker {
     private func valid(code: Code) -> Bool {
         !(attempts.contains {$0.pegs == code.pegs} || code.pegs == Array(repeating: Peg.missing, count: attempts.count))
     }
+}
+
+extension CodeBreaker: Equatable {
+    static func == (lhs: CodeBreaker, rhs: CodeBreaker) -> Bool { lhs === rhs }
 }
