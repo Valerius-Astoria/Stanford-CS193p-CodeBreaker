@@ -66,7 +66,7 @@ struct Code: Identifiable, Hashable {
         return result
     }
     
-    /// Randomizes the code's pegs by selecting from the provided `pegChoices`.
+    /// Randomlly select `count` number of colors from `pegChoices`. 
     mutating func randomize(from pegChoices: [Peg]) {
         pegs = (0..<count).compactMap { _ in pegChoices.randomElement()}
     }

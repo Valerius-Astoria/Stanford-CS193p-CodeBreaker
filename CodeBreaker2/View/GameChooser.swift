@@ -14,6 +14,8 @@ struct GameChooser: View {
     
     // MARK: - Data Owned by Me
     @State private var selection: CodeBreaker.ID?
+    @State private var showGameEditor = false
+    @State private var gameToEdit: CodeBreaker?
     
     // MARK: - Body
     var body: some View {
@@ -32,6 +34,7 @@ struct GameChooser: View {
             }
             .toolbar {
                 EditButton()
+                addButton
             }
             .navigationTitle("Code Breaker")
         } detail: { // Supports iPad and Mac by identifying the content of right panel. 
@@ -43,7 +46,27 @@ struct GameChooser: View {
                 Text("Choose a Game!")
             }
         }
-        
+    }
+    
+    var addButton: some View {
+        Button("Add", systemImage: "plus") {
+            gameToEdit = CodeBreaker(name: "Untitled", numOfPegs: 4, pegChoices: [.green, .blue, .red, .yellow])
+        }
+        .onChange(of: gameToEdit) { // ensures game editor is shown only when gameToEdit is not nil.
+            showGameEditor = gameToEdit != nil
+        }
+        .sheet(isPresented: $showGameEditor, onDismiss: { gameToEdit = nil }) {
+            gameEditor
+        }
+    }
+    
+    @ViewBuilder
+    var gameEditor: some View {
+        if let gameToEdit {
+            GameEditor(game: gameToEdit) {
+                games.insert(gameToEdit, at: 0)
+            }
+        }
     }
 }
 
