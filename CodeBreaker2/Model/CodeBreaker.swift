@@ -6,108 +6,91 @@
 //
 
 import SwiftUI
-import Observation
+import SwiftData
 
-typealias Peg = Color // Each geg is represented by a color
+typealias Peg = String // Each peg is represented by a hex color string.
 
 /// The state and rules for a CodeBreaker game.
-@Observable
-class CodeBreaker: Identifiable {
-    var id = UUID()
-    
+@Model class CodeBreaker {   // @Model already provides Identifiable
+
     var name: String
     var numOfPegs: Int
     var pegChoices: [Peg]
-    
-    var masterCode: Code
-    var guess: Code
-    var attempts: [Code] = []
-    
+
+    @Relationship(deleteRule: .cascade) var masterCode: Code
+    @Relationship(deleteRule: .cascade) var guess: Code
+    @Relationship(deleteRule: .cascade) var attempts: [Code] = []
+
     var isOver: Bool {
         masterCode.kind == .master(isHidden: false)
     }
-    
+
     init(name: String, numOfPegs: Int, pegChoices: [Peg]) {
         self.name = name
         self.numOfPegs = numOfPegs
         self.pegChoices = pegChoices
-        
         self.masterCode = Code(kind: .master(isHidden: true), count: numOfPegs)
-        self.guess = Code(kind: .guess, count: numOfPegs) // Initialize guess with empty pegs.
-        
-        self.masterCode.randomize(from: pegChoices) // Randomly generates the correct peg color combination.
-        print(self.masterCode.pegs)
+        self.guess = Code(kind: .guess, count: numOfPegs)
+        self.masterCode.randomize(from: pegChoices)
     }
-    
-    /// Changes the peg color at a specific position in the current guess.
+
+    /// Cycles the peg at `index` in the current guess to the next color in `pegChoices`.
     ///
-    /// The color is changed to the next available color in the `pegChoices` array, cycling back to the first color if the end of the array is reached.
-    /// If the current is not found in the`pegChoices` array, which should not happen, it defaults to `Color.clear`.
-    ///
-    /// - Parameter index: The index of the peg in the current guess to change.
+    /// If the current peg isn't in `pegChoices` (e.g. it's `Peg.missing`), it becomes the first choice.
     func changeGuessPeg(at index: Int) {
-        // Gets the current color of the target peg.
         let existingPeg = guess.pegs[index]
-        var updatedGuess = guess
-        // Calculates the next color and assigns it to the peg in the current guess.
         if let existingIndex = pegChoices.firstIndex(of: existingPeg) {
-            let nextIndex = (existingIndex + 1) % pegChoices.count
-            updatedGuess.pegs[index] = pegChoices[nextIndex]
+            guess.pegs[index] = pegChoices[(existingIndex + 1) % pegChoices.count]
         } else {
-            updatedGuess.pegs[index] = Peg.missing
+            guess.pegs[index] = pegChoices[0]
         }
-        guess = updatedGuess
     }
-    
-    /// Sets the peg color at a specific position in the current guess.
-    ///
-    /// - Parameter peg: The new color for the target peg. 
-    /// - Parameter index: The index of the peg in the current guess to change.
+
+    /// Sets the peg at `index` in the current guess.
     func setGuessPeg(_ peg: Peg, at index: Int) {
-        var updatedGuess = guess
-        updatedGuess.pegs[index] = peg
-        guess = updatedGuess
+        guess.pegs[index] = peg
     }
-    
-    /// Attempts a guess against the master code, stores the attempt to the `attempts` array, and checks whether the guess matches the master code.
+
+    /// Records the current guess as an attempt and checks whether it cracks the master code.
     ///
-    /// If the current guess is not valid, the attempt will not be added to the array.
+    /// Invalid guesses (empty, or identical to a previous attempt) are ignored.
     func attemptGuess() {
-        // Computes the matching result for the current guess against the ,aster code.
         let matches = guess.match(against: masterCode)
-        // Constructs the current attempt based on guess
         let attempt = Code(kind: .attempt(matches), pegs: guess.pegs)
-        // Checks if the current attempt is sementic to any previous attempts.
-        guard valid(code: attempt) else { return } // Early exists if the guess is invalid.
-        
-        // Checks if the current guess matches the master code.
+        guard valid(code: attempt) else { return }
+
         if matches.allSatisfy({ $0 == .exact }) {
-            self.masterCode.kind = .master(isHidden: false)
+            masterCode.kind = .master(isHidden: false)
         } else {
-            // Inserts the current attempt at the beginning of the attempts array.
             attempts.insert(attempt, at: 0)
-            // Reinitialize guess with empty pegs
-            guess = Code(kind: .guess, count: numOfPegs)
+            guess.pegs = Array(repeating: Peg.missing, count: numOfPegs)
         }
     }
-    
-    /// Restarts the game with pegChoices kept to be the same.
+
+    /// Restarts the game, keeping the same `pegChoices`.
     func restart() {
         masterCode.randomize(from: pegChoices)
         masterCode.kind = .master(isHidden: true)
-        guess = Code(kind: .guess, count: numOfPegs)
+        guess.pegs = Array(repeating: Peg.missing, count: numOfPegs)
         attempts.removeAll()
-        print(self.masterCode.pegs)
     }
-    
-    /// Validates the current attempt. If the attempt is sementic to any previous attempts, or the attempt is empty, the validation would fail.
-    ///
-    /// - Returns: The validation result.
+
+    /// An attempt is invalid if it's empty or duplicates a previous attempt.
     private func valid(code: Code) -> Bool {
-        !(attempts.contains {$0.pegs == code.pegs} || code.pegs == Array(repeating: Peg.missing, count: attempts.count))
+        let isEmpty = code.pegs.allSatisfy { $0 == .missing }
+        let isDuplicate = attempts.contains { $0.pegs == code.pegs }
+        return !isEmpty && !isDuplicate
     }
 }
 
-extension CodeBreaker: Equatable {
-    static func == (lhs: CodeBreaker, rhs: CodeBreaker) -> Bool { lhs === rhs }
+extension Peg {
+    /// A transparent placeholder for an empty slot.
+    static let missing = "#00000000"
+}
+
+extension CodeBreaker {
+    /// Creates a game from colors, storing them as hex strings.
+    convenience init(name: String, numOfPegs: Int, colors: [Color]) {
+        self.init(name: name, numOfPegs: numOfPegs, pegChoices: colors.map(\.hexString))
+    }
 }

@@ -6,13 +6,18 @@
 //
 
 import Foundation
+import SwiftData
 
-struct Code: Identifiable, Hashable {
-    let id = UUID()
+@Model class Code {
     
-    var kind: Kind
+    var _kind: String
     var pegs: [Peg]
-    let count: Int
+    var count: Int
+    
+    var kind: Kind {
+        get { Kind(storageValue: _kind) }
+        set { _kind = newValue.storageValue }
+    }
     
     var matches: [Match] {
         switch kind {
@@ -23,14 +28,14 @@ struct Code: Identifiable, Hashable {
     
     /// Generates a new code with specified kind and `count` of pegs, all initialized to `Peg.missing`.
     init(kind: Kind, count: Int) {
-        self.kind = kind
+        self._kind = kind.storageValue
         self.count = count
         self.pegs = Array(repeating: Peg.missing, count: count)
     }
     
     /// Generates a new code with specified kind and an array of pegs.
-    init (kind: Kind, pegs: [Peg]) {
-        self.kind = kind
+    init(kind: Kind, pegs: [Peg]) {
+        self._kind = kind.storageValue
         self.pegs = pegs
         self.count = pegs.count
     }
@@ -67,31 +72,46 @@ struct Code: Identifiable, Hashable {
     }
     
     /// Randomlly select `count` number of colors from `pegChoices`. 
-    mutating func randomize(from pegChoices: [Peg]) {
+    func randomize(from pegChoices: [Peg]) {
         pegs = (0..<count).compactMap { _ in pegChoices.randomElement()}
     }
     
     /// Kind of Code: guess, attempt, or master.
+    ///
+    /// If you nake Kind Codable, the search function of SwiftData will be pretty limited. Same for Match.
     enum Kind: Equatable {
         case guess
         case attempt([Match])
         case master(isHidden: Bool)
+
+        /// The string persisted in the database, e.g. "guess", "master:hidden", "attempt:eini".
+        var storageValue: String {
+            switch self {
+            case .guess: "guess"
+            case .attempt(let matches): "attempt:" + matches.map(\.rawValue).joined()
+            case .master(let isHidden): isHidden ? "master:hidden" : "master:visible"
+            }
+        }
+
+        /// Rebuilds a kind from its persisted string. Unknown values fall back to `.guess`.
+        init(storageValue: String) {
+            let parts = storageValue.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+            let payload = parts.count > 1 ? String(parts[1]) : ""
+            switch String(parts[0]) {
+            case "attempt":
+                self = .attempt(payload.compactMap { Match(rawValue: String($0)) })
+            case "master":
+                self = .master(isHidden: payload != "visible")
+            default:
+                self = .guess
+            }
+        }
     }
     
     /// Kind of match result: exact, inexact, or nomatch.
-    enum Match {
-        case exact
-        case inexact
-        case nomatch
-    }
-}
-
-extension Code {
-    static func == (lhs: Code, rhs: Code) -> Bool {
-        lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    enum Match: String {
+        case exact = "e"
+        case inexact = "i"
+        case nomatch = "n"
     }
 }

@@ -123,7 +123,7 @@ extension CodeBreakerView {
 }
 
 #Preview {
-    @Previewable @State var game = CodeBreaker(name: "Test Game", numOfPegs: 4, pegChoices: [.red, .green, .blue, .yellow])
+    @Previewable @State var game = CodeBreaker(name: "Test Game", numOfPegs: 4, colors: [.red, .green, .blue, .yellow])
     
     NavigationView {
         CodeBreakerView(game: game)

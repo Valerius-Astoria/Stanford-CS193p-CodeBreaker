@@ -8,8 +8,6 @@
 import SwiftUI
 
 extension Color {
-    static let missing = Color.clear
-    
     static func gray(_ brightness: CGFloat) -> Color { // CGFloat represents float when working with UI
         return Color(hue: 138/360, saturation: 0, brightness: brightness)
     }

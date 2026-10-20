@@ -23,6 +23,6 @@ struct GameSummary: View {
 }
 
 #Preview {
-    let game = CodeBreaker(name: "Test Game", numOfPegs: 4, pegChoices: [.red, .green, .blue, .yellow])
+    let game = CodeBreaker(name: "Test Game", numOfPegs: 4, colors: [.red, .green, .blue, .yellow])
     GameSummary(game: game)
 }

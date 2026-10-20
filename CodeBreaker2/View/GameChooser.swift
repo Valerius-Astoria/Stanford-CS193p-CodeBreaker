@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct GameChooser: View {
     
@@ -50,7 +51,7 @@ struct GameChooser: View {
     
     var addButton: some View {
         Button("Add", systemImage: "plus") {
-            gameToEdit = CodeBreaker(name: "Untitled", numOfPegs: 4, pegChoices: [.green, .blue, .red, .yellow])
+            gameToEdit = CodeBreaker(name: "Untitled", numOfPegs: 4, colors: [.green, .blue, .red, .yellow])
         }
         .onChange(of: gameToEdit) { // ensures game editor is shown only when gameToEdit is not nil.
             showGameEditor = gameToEdit != nil
@@ -75,17 +76,17 @@ struct GameChooser: View {
         CodeBreaker(
             name: "Ocean",
             numOfPegs: 3,
-            pegChoices: [.blue, .cyan, .teal, .indigo]
+            colors: [.blue, .cyan, .teal, .indigo]
         ),
         CodeBreaker(
             name: "Forest",
             numOfPegs: 4,
-            pegChoices: [.green, .mint, .brown, .yellow]
+            colors: [.green, .mint, .brown, .yellow]
         ),
         CodeBreaker(
             name: "Sunset",
             numOfPegs: 5,
-            pegChoices: [.red, .orange, .pink, .purple, .yellow]
+            colors: [.red, .orange, .pink, .purple, .yellow]
         )
     ]
     
