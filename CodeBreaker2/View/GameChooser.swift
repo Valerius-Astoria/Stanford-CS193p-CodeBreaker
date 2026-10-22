@@ -10,8 +10,11 @@ import SwiftData
 
 struct GameChooser: View {
     
+    // MARK: - Data In
+    @Environment(\.modelContext) var modelContext
+    
     // MARK: - Data Shared with Me
-    @Binding var games: [CodeBreaker]
+    @Query(sort: \CodeBreaker.name, order: .forward) private var games: [CodeBreaker]
     
     // MARK: - Data Owned by Me
     @State private var selection: CodeBreaker.ID?
@@ -22,16 +25,19 @@ struct GameChooser: View {
     var body: some View {
         NavigationSplitView {
             // Renders the list of available games.
-            List($games, editActions: [.move, .delete]) { $game in // Allows the moving and deletion action on each list item.
-                NavigationLink {
-                    // Destination of the link
-                    CodeBreakerView(game: game)
-                        .navigationTitle(game.name)
-                        .navigationBarTitleDisplayMode(.inline)
-                } label: {
-                    // Display of the link.
-                     GameSummary(game: game)
+            List {
+                ForEach(games) { game in
+                    NavigationLink {
+                        // Destination of the link
+                        CodeBreakerView(game: game)
+                            .navigationTitle(game.name)
+                            .navigationBarTitleDisplayMode(.inline)
+                    } label: {
+                        // Display of the link.
+                         GameSummary(game: game)
+                    }
                 }
+                .onDelete(perform: deleteGames)
             }
             .toolbar {
                 EditButton()
@@ -65,30 +71,19 @@ struct GameChooser: View {
     var gameEditor: some View {
         if let gameToEdit {
             GameEditor(game: gameToEdit) {
-                games.insert(gameToEdit, at: 0)
+                modelContext.insert(gameToEdit)
             }
+        }
+    }
+    
+    /// Deletes games from the database.
+    private func deleteGames(at offsets: IndexSet) {
+        for index in offsets {
+            modelContext.delete(games[index])
         }
     }
 }
 
-#Preview {
-    @Previewable @State var games = [
-        CodeBreaker(
-            name: "Ocean",
-            numOfPegs: 3,
-            colors: [.blue, .cyan, .teal, .indigo]
-        ),
-        CodeBreaker(
-            name: "Forest",
-            numOfPegs: 4,
-            colors: [.green, .mint, .brown, .yellow]
-        ),
-        CodeBreaker(
-            name: "Sunset",
-            numOfPegs: 5,
-            colors: [.red, .orange, .pink, .purple, .yellow]
-        )
-    ]
-    
-    GameChooser(games: $games)
+#Preview(traits: .swiftData)  {
+    GameChooser()
 }

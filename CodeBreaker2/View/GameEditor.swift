@@ -47,7 +47,7 @@ struct GameEditor: View {
     }
 }
 
-#Preview {
+#Preview(traits: .swiftData)  {
     let game = CodeBreaker(name: "Test Game", numOfPegs: 4, colors: [.red, .green, .blue, .yellow])
     GameEditor(game: game, onChoose: {})
 }

@@ -9,12 +9,11 @@ import Foundation
 import SwiftData
 
 @Model class Code {
-    
     var _kind: String
     var pegs: [Peg]
     var count: Int
     
-    var kind: Kind {
+    var kind: Kind { // converts to and from String
         get { Kind(storageValue: _kind) }
         set { _kind = newValue.storageValue }
     }

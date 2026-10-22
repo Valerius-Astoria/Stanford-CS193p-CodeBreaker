@@ -94,3 +94,24 @@ extension CodeBreaker {
         self.init(name: name, numOfPegs: numOfPegs, pegChoices: colors.map(\.hexString))
     }
 }
+
+extension CodeBreaker {
+    // Creates sample data for testing. 
+    static var sampleData: [CodeBreaker] = [
+        CodeBreaker(
+            name: "Ocean",
+            numOfPegs: 3,
+            colors: [.blue, .cyan, .teal, .indigo]
+        ),
+        CodeBreaker(
+            name: "Forest",
+            numOfPegs: 4,
+            colors: [.green, .mint, .brown, .yellow]
+        ),
+        CodeBreaker(
+            name: "Sunset",
+            numOfPegs: 5,
+            colors: [.red, .orange, .pink, .purple, .yellow]
+        )
+    ]
+}
