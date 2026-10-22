@@ -1,6 +1,6 @@
 # 简介
 
-这是一个可以在 iPhone/iPad 上运行的 MasterMind 游戏，我在学习 Stanford CS193p 的过程中，与老师一起，经过16节课的时间搭建完成。
+这是一个可以在 iPhone/iPad 上运行的 MasterMind 游戏，是我在学习 Stanford CS193p 的过程中，与老师一起，经过16节课的时间搭建完成的作品。
 
 项目全面应用了 SwiftUI、SwiftData 的重要机制，其中包含：
 
@@ -9,7 +9,7 @@
 - 使用 @State、@Bindable、@Observable 等进行数据传递与状态保持
 - 使用 ModelContainer、ModelContext、@Query 进行数据访问与持久化
 
-完成课程学习后，我具有中级 iOS 开发能力，能够熟练阅读 Swift 相关文档，清楚数据传输与界面转换机制，也能够保证数据在本地与外部的持久化。
+完成课程学习后，我具备了中级 iOS 开发能力，能够熟练阅读 Swift 相关文档，清楚数据传输与界面转换机制，也能够保证数据在本地与外部的持久化。
 
 # App 展示
 
